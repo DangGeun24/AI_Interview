@@ -219,7 +219,7 @@ else:
 
     if page == "home":
         # 대시보드 성격의 홈 화면
-        st.title(f"환영합니다, {st.session_state['current_user']}님! 👋")
+        st.title(f"환영합니다, {st.session_state['current_user']}님!")
         
         c1, c2 = st.columns(2)
         with c1:
