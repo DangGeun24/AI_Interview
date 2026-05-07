@@ -144,11 +144,11 @@ def delete_confirmation_dialog(session_id):
 
 # 사이드바 레이아웃
 with st.sidebar:
-    st.title("AI Interviewer")
+    st.title("AI 면접관")
     if not st.session_state["is_logged_in"]:
         st.warning("로그인이 필요합니다.")
     else:
-        st.subheader("Menu")
+        st.subheader("메뉴")
         if st.button("🏠 홈", use_container_width=True): go_to_page("home"); st.rerun()
         st.markdown("---")
         
