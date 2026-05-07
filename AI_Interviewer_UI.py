@@ -10,7 +10,6 @@ st.markdown('''
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200..900&display=swap');
 
-/* 다크 그린 테마 변수 */
 :root {
     --bg-color: #252620;
     --sidebar-bg: #3C3D37;
@@ -19,7 +18,6 @@ st.markdown('''
     --font-stack: 'Noto Serif KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* 전체 폰트 및 배경색 강제 적용 */
 footer { display: none !important; }
 h1, h2, h3, h4, h5, h6, p, li, label, .stMarkdown p, .stMarkdown div, .stButton button {
     font-family: var(--font-stack) !important;
@@ -29,38 +27,32 @@ h1, h2, h3, h4, h5, h6, p, li, label, .stMarkdown p, .stMarkdown div, .stButton 
     background-color: var(--bg-color) !important;
 }
 
-/* 시스템 아이콘은 폰트 깨지지 않게 보호 */
 [data-testid="stIcon"], .stIcon, .material-icons, svg, i, span:has(svg), [class^="st-ae"], [class^="st-af"] {
     font-family: inherit !important;
     font-feature-settings: normal !important;
 }
 
-/* 탭 하이라이트 & 라디오 버튼 색상 커스텀 */
 [data-baseweb="tab-highlight"] { background-color: var(--accent-color) !important; }
 [data-testid="stRadioButton"] div[role="radiogroup"] div[aria-checked="true"] > div {
     background-color: var(--accent-color) !important;
 }
 
-/* 입력창 포커스 효과 */
 div[data-baseweb="input"] > div { border-color: rgba(255, 255, 255, 0.2) !important; }
 div[data-baseweb="input"] > div:focus-within {
     border-color: var(--accent-color) !important;
     box-shadow: 0 0 0 1px var(--accent-color) !important;
 }
 
-/* 텍스트 가독성 향상 */
 .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, .stApp p, .stApp li, .stMarkdown, .stMarkdown div {
     color: var(--text-color) !important;
     -webkit-font-smoothing: antialiased;
 }
 
-/* 왼쪽 사이드바 스타일링 */
 [data-testid="stSidebar"] { background-color: var(--sidebar-bg) !important; }
 [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
     color: var(--text-color) !important;
 }
 
-/* 버튼 디자인 통일 */
 .stButton > button, div[data-testid="stFormSubmitButton"] > button {
     background-color: var(--accent-color) !important;
     color: #FFFFFF !important;
@@ -77,7 +69,6 @@ div[data-baseweb="input"] > div:focus-within {
     justify-content: center !important;
 }
 
-/* 알림/성공 박스 라운딩 */
 div[data-testid="stNotification"] {
     background-color: var(--sidebar-bg) !important;
     color: var(--text-color) !important;
@@ -181,7 +172,7 @@ with st.sidebar:
                     if st.button("🗑️ 삭제", key=f"dl_{s['id']}"): delete_confirmation_dialog(s["id"])
 
         st.markdown("---")
-        st.write(f"✅ {st.session_state['current_user']}님")
+        st.write(f">> {st.session_state['current_user']}님")
         if st.button("로그아웃"): st.session_state["is_logged_in"] = False; st.session_state["current_user"] = None; st.rerun()
 
 # 메인 뷰 로직
@@ -198,7 +189,7 @@ if not st.session_state["is_logged_in"]:
                 if st.form_submit_button("로그인", use_container_width=True, type="primary"):
                     if l_id in st.session_state["users"] and st.session_state["users"][l_id] == l_pw:
                         st.session_state["is_logged_in"] = True; st.session_state["current_user"] = l_id; st.rerun()
-                    else: st.error("아이디나 비밀번호가 틀렸어요.")
+                    else: st.error("아이디나 비밀번호가 틀렸습니다.")
         with t2:
             with st.form("r_form"):
                 r_id = st.text_input("새 아이디")
@@ -234,7 +225,7 @@ else:
     elif page == "session_view":
         # 개별 세션 (첨삭/면접) 뷰
         curr = st.session_state["sessions"].get(st.session_state["current_session_id"])
-        if not curr: st.warning("세션을 찾을 수 없어요."); go_to_page("home"); st.rerun()
+        if not curr: st.warning("세션을 찾을 수 없습니다."); go_to_page("home"); st.rerun()
         
         # 상단 탭으로 모드 전환
         st.write("")
