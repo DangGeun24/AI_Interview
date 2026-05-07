@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # 기본 페이지 세팅
-st.set_page_config(page_title="AI 면접관 & 이력서 첨삭", layout="wide", page_icon="🤖")
+st.set_page_config(page_title="AI 면접관 & 이력서 첨삭", layout="wide", page_icon="")
 
 # UI 스타일링 및 테마 설정
 st.markdown('''
@@ -144,7 +144,7 @@ def delete_confirmation_dialog(session_id):
 
 # 사이드바 레이아웃
 with st.sidebar:
-    st.title("🤖 AI Interviewer")
+    st.title("AI Interviewer")
     if not st.session_state["is_logged_in"]:
         st.warning("로그인이 필요합니다.")
     else:
@@ -186,7 +186,7 @@ with st.sidebar:
 
 # 메인 뷰 로직
 if not st.session_state["is_logged_in"]:
-    st.title("🤖 AI 면접관 & 이력서 첨삭")
+    st.title("AI 면접관 & 이력서 첨삭")
     st.markdown("서비스를 이용하시려면 로그인해주세요.")
     col_login, _ = st.columns([1, 1])
     with col_login:
