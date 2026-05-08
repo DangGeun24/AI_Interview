@@ -546,8 +546,17 @@ else:
                     # 면접관 표시 (화상 모드일 때만)
                     talking_class = "talking" if st.session_state.get("is_ai_talking") else ""
                     st.markdown(f'<div class="interviewer-box {talking_class}">', unsafe_allow_html=True)
-                    img_path = r"C:\Users\ekdus\.gemini\antigravity\brain\e3969c1b-c55b-4d64-96fa-1494af90e874\female_interviewer_v2_1778229880895.png" # [하드코딩] 이미지 절대 경로
-                    st.image(img_path, use_container_width=True)
+                    
+                    # [하드코딩] 이미지 경로 - 배포 시에는 상대 경로(예: assets/image.png)로 변경 필요
+                    img_path = r"C:\Users\ekdus\.gemini\antigravity\brain\e3969c1b-c55b-4d64-96fa-1494af90e874\female_interviewer_v2_1778229880895.png"
+                    
+                    import os
+                    if os.path.exists(img_path):
+                        st.image(img_path, use_container_width=True)
+                    else:
+                        st.error("면접관 이미지를 찾을 수 없습니다. 경로를 확인해주세요.")
+                        # 임시 플레이스홀더 (필요시)
+                        st.image("https://via.placeholder.com/400x500?text=AI+Interviewer", use_container_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                     
                     if st.session_state.get("is_ai_talking"):
