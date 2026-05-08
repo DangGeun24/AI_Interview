@@ -1,6 +1,7 @@
 import streamlit as st
 import uuid
 import time
+import base64
 from datetime import datetime, timedelta
 
 # 페이지 기본 설정
@@ -222,6 +223,13 @@ if "resume_count" not in st.session_state: st.session_state["resume_count"] = 0
 if "selection_mode" not in st.session_state: st.session_state["selection_mode"] = False
 if "selected_sessions" not in st.session_state: st.session_state["selected_sessions"] = []
 if "is_ai_talking" not in st.session_state: st.session_state["is_ai_talking"] = False
+if "pending_answer" not in st.session_state: st.session_state["pending_answer"] = None
+
+def get_image_base64(path):
+    import os
+    if not os.path.exists(path): return None
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 # 대화 세션 관리 함수
 def create_session(title="새로운 대화", initial_type="resume"):
@@ -545,19 +553,27 @@ else:
                 with v_left:
                     # 면접관 표시 (화상 모드일 때만)
                     talking_class = "talking" if st.session_state.get("is_ai_talking") else ""
-                    st.markdown(f'<div class="interviewer-box {talking_class}">', unsafe_allow_html=True)
                     
-                    # [하드코딩] 이미지 경로 - 배포 시에는 상대 경로(예: assets/image.png)로 변경 필요
-                    img_path = r"C:\Users\ekdus\.gemini\antigravity\brain\e3969c1b-c55b-4d64-96fa-1494af90e874\female_interviewer_v2_1778229880895.png"
+                    # 이미지 경로 확인
+                    rel_path = "interviewer.png"
+                    abs_path = r"C:\Users\ekdus\.gemini\antigravity\brain\e3969c1b-c55b-4d64-96fa-1494af90e874\female_interviewer_v2_1778229880895.png"
                     
                     import os
-                    if os.path.exists(img_path):
-                        st.image(img_path, use_container_width=True)
+                    img_path = rel_path if os.path.exists(rel_path) else (abs_path if os.path.exists(abs_path) else None)
+                    
+                    if img_path:
+                        img_b64 = get_image_base64(img_path)
+                        st.markdown(f'''
+                            <div class="interviewer-box {talking_class}">
+                                <img src="data:image/png;base64,{img_b64}" style="width:100%; display:block;">
+                            </div>
+                        ''', unsafe_allow_html=True)
                     else:
-                        st.error("면접관 이미지를 찾을 수 없습니다. 경로를 확인해주세요.")
-                        # 임시 플레이스홀더 (필요시)
-                        st.image("https://via.placeholder.com/400x500?text=AI+Interviewer", use_container_width=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        st.error("면접관 이미지를 찾을 수 없습니다.")
+                        st.markdown(f'<div class="interviewer-box {talking_class}"><img src="https://via.placeholder.com/400x500?text=AI+Interviewer" style="width:100%;"></div>', unsafe_allow_html=True)
+                    
+                    if st.session_state.get("is_ai_talking"):
+                        st.markdown('''<div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>''', unsafe_allow_html=True)
                     
                     if st.session_state.get("is_ai_talking"):
                         st.markdown('''<div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>''', unsafe_allow_html=True)
@@ -578,6 +594,15 @@ else:
                     # 1. 기존 대화 기록 출력
                     for m in curr.get("interview_messages", []):
                         with st.chat_message(m["role"]): st.markdown(m["content"])
+                    
+                    # 1.5 펜딩된 답변(AI 답변 중) 처리
+                    if st.session_state.get("pending_answer"):
+                        res_text = st.session_state.pop("pending_answer")
+                        with st.chat_message("assistant"):
+                            st.write_stream(stream_data(res_text))
+                        curr.setdefault("interview_messages", []).append({"role": "assistant", "content": res_text})
+                        st.session_state["is_ai_talking"] = False
+                        st.rerun()
                     
                     # 2. 신규 입력 처리 및 실시간 답변 출력 (컨테이너 내부에서 렌더링)
                     input_text = None
@@ -603,18 +628,19 @@ else:
                         with st.chat_message("user"): st.markdown(user_content)
                         
                         with st.chat_message("assistant"):
-                            with st.spinner("이력서 분석 및 답변 생성 중..."):
+                            # 파일 첨부 여부에 따라 메시지 분기
+                            spinner_msg = "이력서 분석 및 답변 생성 중..." if input_files else "답변 생성 중..."
+                            with st.spinner(spinner_msg):
                                 time.sleep(1.5) # [하드코딩] 지연 시간
                                 if input_files:
                                     res_text = f"첨부해주신 이력서({input_files[0].name})를 확인했습니다. 기재하신 프로젝트 경험 중 가장 어려웠던 기술적 난관은 무엇이었나요?" # [하드코딩] 질문 샘플
                                 else:
                                     res_text = "네, 답변 감사드립니다. 다음 질문입니다." # [하드코딩] 질문 샘플
                                 
+                                # 답변을 세션에 저장하고 다시 시작하여 '말하기' 애니메이션 활성화
+                                st.session_state["pending_answer"] = res_text
                                 st.session_state["is_ai_talking"] = True
-                                st.write_stream(stream_data(res_text))
-                                st.session_state["is_ai_talking"] = False
-                                curr.setdefault("interview_messages", []).append({"role": "assistant", "content": res_text})
-                        st.rerun()
+                                st.rerun()
 
                 # 음성 모드일 때 마이크 버튼 (채팅창 바로 아래 배치)
                 if ui == "음성":
